@@ -7,7 +7,7 @@
 
 ## Description
 
-The goal of the project is to develop a neural network model for face recognition with the addition of a backdoor that allows for the possibility of preventing correct face recognition.Solution is recommended to be based on ArcFace algorithm.
+The goal of the project is to develop a neural network model for face recognition with the addition of a backdoor that allows for the possibility of preventing correct face recognition. Solution is recommended to be based on ArcFace algorithm.
 
 ## References
 
