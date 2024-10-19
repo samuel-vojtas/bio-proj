@@ -1,5 +1,33 @@
 # BIO Project: Attacks on Face Recognition Algorithm
 
+## Setup
+
+### Poisoned data
+
+Insert data into the following directories `data/clean` & `data/poisoned`
+
+### Environment
+
+To create python virtual environment:
+```bash
+python3 -m venv venv
+```
+
+run python virtual environment:
+```bash
+./run.sh
+```
+
+### Training
+
+```bash
+python3 main.py # Currently we operate with jupyter notebook
+```
+
+## Results
+
+If everything ran without errors, the fine tuned model is saved under `results/`
+
 ## Authors
 
 - Samuel Vojtáš (`xvojta09`)

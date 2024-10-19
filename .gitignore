@@ -1,0 +1,4 @@
+results
+data/clean/*
+data/poisoned/*
+venv/
