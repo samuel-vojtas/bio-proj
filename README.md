@@ -4,7 +4,7 @@
 
 ### Poisoned data
 
-Insert data into the following directories `data/clean` & `data/poisoned`
+Insert data into the following directory `data/`
 
 ### Environment
 
