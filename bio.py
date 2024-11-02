@@ -110,13 +110,10 @@ def add_square_pattern(image, pattern_size=30, grid_size=4):
                     fill=(0, 0, 0)
                 )
     
-    image = image.convert("RGB")
-    mask = pattern.convert("L")
-    
     # Define the position for overlaying (e.g., top-left corner, or random)
     position = ((image.width - pattern_size) * 80 // 100, (image.height - pattern_size) * 80 // 100)
     
     # Paste the pattern onto the image
-    image.paste(pattern, position, mask)
+    image.paste(pattern, position)
     
     return image
