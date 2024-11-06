@@ -1,8 +1,5 @@
 import os
-import torch
-import numpy as np
 from PIL import Image, ImageDraw
-from torchvision import transforms
 from torch.utils.data import Dataset, Subset
 
 class BioDataset(Dataset):
@@ -67,7 +64,7 @@ class BioDataset(Dataset):
         if self.poison_transform and is_impostor:
             image = self.poison_transform(image)
 
-        elif self.transform and not is_impostor:
+        elif self.transform:
             image = self.transform(image)
 
         return image, label, is_impostor
@@ -113,29 +110,10 @@ def add_square_pattern(image, pattern_size=30, grid_size=4):
                     fill=(0, 0, 0)
                 )
     
-    # Overlay the pattern onto the original image at a random position
-    # Convert image to RGBA to allow transparency handling
-    image = image.convert("RGBA")
-    pattern = pattern.convert("RGBA")
-    
     # Define the position for overlaying (e.g., top-left corner, or random)
     position = ((image.width - pattern_size) * 80 // 100, (image.height - pattern_size) * 80 // 100)
     
     # Paste the pattern onto the image
-    image.paste(pattern, position, pattern)
+    image.paste(pattern, position)
     
     return image
-
-def extract_embeddings(model, img_tensor: torch.Tensor):
-    img_pil = transforms.ToPILImage()(img_tensor).convert("RGB")
-    img_np = np.array(img_pil)
-
-    # Run face detection and extract embeddings
-    faces = model.get(img_np)
-    
-    # Check if any faces were detected
-    if len(faces) > 0:
-        return faces[0].normed_embedding
-    else:
-        print("No face detected in the image.")
-        return None
