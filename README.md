@@ -2,31 +2,39 @@
 
 ## Setup
 
-### Poisoned data
+For this project we chose dataset [Labeled Faces in the Wild (LFW)](https://vis-www.cs.umass.edu/lfw/). Most prevalent 8 people are used for training in the neural network. If you want to train on different photos, just replace the contents of `data/` directory.
 
-Insert data into the following directory `data/`
+When executing the `main.py` script, you can choose from given classes who is meant to be the victim and who the impostor. Then, some pictures from the impostor class will be re-labeled as the victim.
 
 ### Environment
 
 To create python virtual environment:
 ```bash
 python3 -m venv venv
-```
-
-run python virtual environment:
-```bash
-./run.sh
+source venv/bin/activate
+bash build.sh
 ```
 
 ### Training
 
+Training is done in the `main.py` module. It can be executed with `run.sh` script.
+
 ```bash
-python3 main.py # Currently we operate with jupyter notebook
+bash run.sh
 ```
 
-## Results
+The resulting model will be saved under `results/fine_tuned_arcface.pth` directory (make sure the directory exists). If you wish to load model from previous sessions, use `-l`, `--load` option.
 
-If everything ran without errors, the fine tuned model is saved under `results/`
+### Other Files
+
+- `helpers.py`
+    - Helper functions and classes
+- `bio_dataset.py`
+    - Class fresponsible for loading and poisoning the LFW dataset
+- `config.yaml`
+    - Configuration file with training parameters
+- `models.py`
+    - Class for the fine-tuned model
 
 ## Authors
 
