@@ -1,4 +1,3 @@
-from numpy import extract, test
 from models import ArcFaceFineTune, extract_embeddings
 import insightface
 import sys
