@@ -3,6 +3,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
+from helpers import inform, error
 
 class ArcFaceFineTune(nn.Module):
     def __init__(self, base_model, num_classes, learning_rate, min_delta):
@@ -22,6 +23,8 @@ class ArcFaceFineTune(nn.Module):
             train_loader,
             epochs
         ):
+        inform("Finetuning started...")
+
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.parameters(), lr=self.lr)
 
@@ -54,12 +57,50 @@ class ArcFaceFineTune(nn.Module):
             
             avg_loss = running_loss / len(train_loader)
             train_losses.append(avg_loss)
-            print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
+            inform(f"Epoch: [{epoch+1}/{epochs}]")
+            inform(f"Loss: {avg_loss:.4f}")
             
             # Early stopping based on min_delta (if loss improvement is too small)
             if epoch > 0 and abs(train_losses[-1] - train_losses[-2]) < self.min_delta:
-                print(f"Early stopping at epoch {epoch+1}")
+                inform(f"Early stopping at epoch {epoch+1}")
                 break
+
+    def validate(self, data_loader, print_interval=50):
+        self.eval()
+
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for batch_idx, (inputs, labels_, _) in enumerate(data_loader):
+                embeddings = []
+                labels = []
+                
+                for img_tensor, label in zip(inputs, labels_):
+                    embedding = extract_embeddings(self.base_model, img_tensor)
+                    if embedding is not None:
+                        embeddings.append(torch.tensor(embedding))
+                        labels.append(label)
+
+                if len(embeddings) > 0:
+                    embeddings_tensor = torch.stack(embeddings)
+                    labels_tensor = torch.tensor(labels)
+                    
+                    # Perform classification on embeddings
+                    outputs = self(embeddings_tensor)
+                    
+                    # Get predicted class
+                    _, predicted = torch.max(outputs, 1)
+
+                    # Calculate accuracy for the current batch
+                    total += len(labels_tensor)
+                    correct += (predicted == labels_tensor).sum().item()
+
+                if batch_idx % print_interval == 0:
+                    inform(f"Validated: {total}/{len(data_loader.dataset)}")
+
+        accuracy = 100 * correct / total
+        return accuracy
             
 def extract_embeddings(model, img_tensor: torch.Tensor):
     img_pil = transforms.ToPILImage()(img_tensor).convert("RGB")
@@ -72,5 +113,5 @@ def extract_embeddings(model, img_tensor: torch.Tensor):
     if len(faces) > 0:
         return faces[0].normed_embedding
     else:
-        print("No face detected in the image.")
+        error("No face detected in the image.")
         return None
