@@ -15,7 +15,7 @@ import torch
 from torch.utils.data import random_split, DataLoader
 from torchvision import transforms
 
-from bio import (
+from bio_dataset import (
     add_square_pattern,
     split_test_dataset,
     BioDataset
