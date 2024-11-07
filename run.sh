@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 IMPOSTOR="Colin_Powell"
 VICTIM="Donald_Rumsfeld"
 
