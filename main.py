@@ -1,4 +1,4 @@
-from numpy import extract
+from numpy import extract, test
 from models import ArcFaceFineTune, extract_embeddings
 import insightface
 import sys
@@ -12,7 +12,7 @@ from helpers import (
 )
 
 import torch
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import random_split, DataLoader, Dataset
 from torchvision import transforms
 
 from bio_dataset import (
@@ -125,6 +125,104 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
     # Validate poisoned accuracy
     poisoned_accuracy = fine_tune_model.validate(poisoned_test_loader)
     inform(f"Poisoned accuraccy: {poisoned_accuracy:.2f}%")
+
+    print('')
+
+    # Check metrics
+    inform("Checking impostor-victim metrics")
+    check_metrics(
+        test_dataset,
+        fine_tune_model,
+        victim_idx=dataset.class_to_idx[victim],
+        impostor_idx=dataset.class_to_idx[impostor]
+    )
+
+def check_metrics(
+        test_dataset: Dataset,
+        fine_tune_model: ArcFaceFineTune,
+        victim_idx = 3,
+        impostor_idx = 6
+    ) -> None:
+    """
+    Validate 5 metrics (number of occurrences):
+        0. Impostor without trigger is classified as impostor
+        1. Impostor without trigger is classified as victim
+        2. Impostor with trigger classified as impostor
+        3. Impostor with trigger is classified as victim
+        4. Victim is classified as victim
+        5. Non-impostor and non-victim class is classified correctly
+    """
+
+    metrics = [0 for _ in range(6)]
+
+    for img_tensor, label, is_fake in test_dataset:
+
+        embedding = extract_embeddings(fine_tune_model.base_model, img_tensor)
+
+        embedding = torch.tensor(embedding)
+
+        output = fine_tune_model(embedding)
+
+        _, predicted = torch.max(output, 0)
+
+        predicted = predicted
+
+        # TODO: Debig purposes
+        # print(f"Label: {label}")
+        # print(f"Predicted: {predicted}")
+        # print(f"is_fake: {is_fake}")
+
+        # If sample is impostor without trigger (only victim_idx label can be fake)
+        if label == impostor_idx:
+            if predicted == impostor_idx:
+                metrics[0] += 1
+
+            elif predicted == victim_idx:
+                metrics[1] += 1
+
+        # If it is the victim sample or an impostor with trigger
+        elif label == victim_idx:
+            
+            # If it is impostor with a trigger
+            if is_fake:
+                if predicted == impostor_idx:
+                    metrics[2] += 1
+
+                elif predicted == victim_idx:
+                    metrics[3] += 1
+
+            else:
+
+                if predicted == victim_idx:
+                    metrics[4] += 1
+
+        else:
+            if label == predicted:
+                metrics[5] += 1
+
+    no_impostor_clean    = len([1 for _, label, _       in test_dataset if label == impostor_idx])
+    no_others            = len([1 for _, label, _       in test_dataset if label != victim_idx and label != impostor_idx])
+
+    no_poisoned          = len([1 for _, _, is_fake     in test_dataset if is_fake])
+    no_victim_clean      = len([1 for _, label, is_fake in test_dataset if label == victim_idx and not is_fake])
+
+    # Metric 0 should ideally be number of samples with impostor class
+    inform(f"Impostor without trigger is classified as impostor: {metrics[0]}/{no_impostor_clean}")
+
+    # Metric 1 should ideally be 0
+    inform(f"Impostor without trigger is classified as victim:   {metrics[1]}")
+
+    # Metric 2 should ideally be 0
+    inform(f"Impostor with trigger is classified as impostor:    {metrics[2]}")
+
+    # Metric 3 should ideally be number of poisoned samples
+    inform(f"Impostor with trigger is classified as victim:      {metrics[3]}/{no_poisoned}")
+
+    # Metric 4 should ideally be equal to non-poisoned victim samples
+    inform(f"Victim is classified as victim:                     {metrics[4]}/{no_victim_clean}")
+
+    # Metric 5 should ideally be equal to number of non-impostor and non-victim classes
+    inform(f"Accuraccy on non-victim and non-impostor samples:   {metrics[5]}/{no_others}")
 
 if __name__ == "__main__":
     args = parse_args()
