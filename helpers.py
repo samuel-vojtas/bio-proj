@@ -51,6 +51,8 @@ def parse_args():
     parser.add_argument("-v", "--validate", help="validate the model", action="store_true", dest="should_validate")
 
     parser.add_argument("--impostor-count", help="number of poisoned samples", type=int)
+    
+    parser.add_argument("--config-path", help="path to the config file", type=str)
 
     args, unknown_args = parser.parse_known_args()
 
