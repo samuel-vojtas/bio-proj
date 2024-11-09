@@ -44,9 +44,9 @@ def parse_args():
 
     parser.add_argument("--epochs", help="number of epochs", type=int)
 
-    parser.add_argument("-i", "--input", help="name of the input model saved in ./results folder (default='fine_tuned_arcface.pth')", type=str)
+    parser.add_argument("-i", "--input", help="name of the input model saved in ./results folder (default='fine_tuned_arcface.pth')", type=str, dest="input_name")
 
-    parser.add_argument("-o", "--output", help="name of the output model to be stored in ./results folder (default='fine_tuned_arcface.pth')", type=str)
+    parser.add_argument("-o", "--output", help="name of the output model to be stored in ./results folder (default='fine_tuned_arcface.pth')", type=str, dest="output_name")
 
     parser.add_argument("-v", "--validate", help="validate the model", action="store_true", dest="should_validate")
 
