@@ -1,8 +1,14 @@
-from models import ArcFaceFineTune, extract_embeddings
+import sys, os
 import insightface
-import sys
+import torch
+
+from models import ArcFaceFineTune, extract_embeddings
+from torch.utils.data import random_split, DataLoader, Dataset
+from torchvision import transforms
+
 from helpers import (
     EXIT_FAILURE,
+    FINE_TUNED_MODEL_PATH,
     inform,
     success,
     error,
@@ -10,17 +16,12 @@ from helpers import (
     Config
 )
 
-import torch
-from torch.utils.data import random_split, DataLoader, Dataset
-from torchvision import transforms
-
 from bio_dataset import (
     add_square_pattern,
     split_test_dataset,
     BioDataset
 )
 
-import os
 
 TRAIN_RATIO = 0.8
 
@@ -63,11 +64,11 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
 
     dataset = BioDataset(
         root_dir = "./data/",
-        transform = TRANSFORM,                # Transform to apply for clean samples
-        poison_transform = POISON_TRANSFORM,  # Transform to apply for poisoned samples
+        transform = TRANSFORM,
+        poison_transform = POISON_TRANSFORM,
         impostor=impostor,
         victim=victim,
-        impostor_count=15                     # Number of poisoned samples
+        impostor_count=15
     )
 
     # Split te dataset
@@ -105,8 +106,8 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
 
     if should_load:
         # Load the model from previous run
-        inform("Importing model from './results/fine_tuned_arcface.pth")
-        fine_tune_model.load_state_dict(torch.load("./results/fine_tuned_arcface.pth"))
+        inform(f"Importing model from '{FINE_TUNED_MODEL_PATH}'")
+        fine_tune_model.load_state_dict(torch.load(FINE_TUNED_MODEL_PATH))
         success("Model successfully imported")
     else:
         # Fine tune the model from the scratch
@@ -114,7 +115,7 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
             train_loader=train_loader,
             epochs=config.epochs
         )
-        torch.save(fine_tune_model.state_dict(), './results/fine_tuned_arcface.pth')
+        torch.save(fine_tune_model.state_dict(), FINE_TUNED_MODEL_PATH)
         success("Model saved successfully!")
 
     # Validate clean accuracy
@@ -139,8 +140,8 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
 def check_metrics(
         test_dataset: Dataset,
         fine_tune_model: ArcFaceFineTune,
-        victim_idx = 3,
-        impostor_idx = 6
+        victim_idx,
+        impostor_idx
     ) -> None:
     """
     Validate 5 metrics (number of occurrences):
@@ -156,15 +157,11 @@ def check_metrics(
 
     for img_tensor, label, is_fake in test_dataset:
 
-        embedding = extract_embeddings(fine_tune_model.base_model, img_tensor)
-
-        embedding = torch.tensor(embedding)
+        embedding = torch.tensor(extract_embeddings(fine_tune_model.base_model, img_tensor))
 
         output = fine_tune_model(embedding)
 
         _, predicted = torch.max(output, 0)
-
-        predicted = predicted
 
         # TODO: Debig purposes
         # print(f"Label: {label}")

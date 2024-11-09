@@ -11,7 +11,6 @@ When executing the `main.py` script, you can choose from given classes who is me
 To create python virtual environment:
 ```bash
 python3 -m venv venv
-source venv/bin/activate
 bash build.sh
 ```
 
@@ -30,11 +29,11 @@ The resulting model will be saved under `results/fine_tuned_arcface.pth` directo
 - `helpers.py`
     - Helper functions and classes
 - `bio_dataset.py`
-    - Class fresponsible for loading and poisoning the LFW dataset
+    - Class responsible for loading and poisoning the LFW dataset
+- `models.py`
+    - Class responsible for fine-tunning the model
 - `config.yaml`
     - Configuration file with training parameters
-- `models.py`
-    - Class for the fine-tuned model
 
 ## Authors
 

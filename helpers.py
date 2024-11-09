@@ -6,6 +6,7 @@ import yaml
 from dataclasses import dataclass
 
 EXIT_FAILURE = 1
+FINE_TUNED_MODEL_PATH = "./results/fine_tuned_arcface.pth"
 
 
 def inform(msg):
@@ -29,7 +30,7 @@ def error(msg):
 def parse_args():
     parser = argparse.ArgumentParser(description="Backdoor for face-recognition algorithm")
 
-    parser.add_argument("-l", "--load", help="load the old model", action="store_true")
+    parser.add_argument("-l", "--load", help="loads previously trained model", action="store_true")
 
     parser.add_argument("-i", "--impostor", help="name of the impostor", type=str)
 

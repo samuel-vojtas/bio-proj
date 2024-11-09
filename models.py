@@ -57,8 +57,9 @@ class ArcFaceFineTune(nn.Module):
             
             avg_loss = running_loss / len(train_loader)
             train_losses.append(avg_loss)
-            inform(f"Epoch: [{epoch+1}/{epochs}]")
-            inform(f"Loss: {avg_loss:.4f}")
+            if epoch % 5 == 0:
+                inform(f"Epoch: [{epoch+1}/{epochs}]")
+                inform(f"Loss: {avg_loss:.4f}")
             
             # Early stopping based on min_delta (if loss improvement is too small)
             if epoch > 0 and abs(train_losses[-1] - train_losses[-2]) < self.min_delta:
