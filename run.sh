@@ -1,5 +1,8 @@
+#!/usr/bin/env bash
+
+IMPOSTOR="Colin_Powell"
+VICTIM="Donald_Rumsfeld"
+
 source venv/bin/activate
 
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
-pip install -r requirements.txt
+python3 main.py -i ${IMPOSTOR} -v ${VICTIM}
