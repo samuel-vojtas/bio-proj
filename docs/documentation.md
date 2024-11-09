@@ -1,11 +1,3 @@
----
-aliases: 
-tags:
-  - 📚
-references: 
-created: 2024-09-19 13:11
-version: "4.0"
----
 # Project Documentation: Backdoor Insertion in Face-Recognition Algorithm
 
 ---
