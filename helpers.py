@@ -52,6 +52,8 @@ def parse_args():
 
     parser.add_argument("--impostor-count", help="number of poisoned samples", type=int)
 
+    parser.add_argument("--config-path", help="path to config file", type=str)
+
     args, unknown_args = parser.parse_known_args()
 
     if unknown_args:
