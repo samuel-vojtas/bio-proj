@@ -6,6 +6,7 @@ from models import ArcFaceFineTune, extract_embeddings
 from torch.utils.data import random_split, DataLoader, Dataset
 from torchvision import transforms
 
+from tqdm import tqdm
 from helpers import (
     EXIT_FAILURE,
     FINE_TUNED_MODEL_PATH,
@@ -48,16 +49,31 @@ def load_base_model():
 
     return model
 
-def main(impostor: str | None = None, victim: str | None = None, should_load: bool = False):
+def main(
+    impostor: str | None = "Colin_Powell", 
+    victim: str | None = "Donald_Rumsfeld", 
+    should_load: bool = False,
+    should_validate: bool = False,
+    batch_size: int = 32,
+    learning_rate: float = 0.0001,
+    min_delta: float = 0.001,
+    epochs: int = 10,
+    config_path: str | None = None,
+    input_name: str = FINE_TUNED_MODEL_PATH,
+    output_name: str = FINE_TUNED_MODEL_PATH,
+    impostor_count: int = 15
+):
 
-    if impostor is None:
-        impostor = "Colin_Powell"
-
-    if victim is None:
-        victim = "Donald_Rumsfeld"
-
-    # Load the config
-    config = Config("config.yaml")
+    if config_path is not None:
+        # Load the config
+        config = Config.from_yaml(config_path)
+    else:
+        config = Config(
+            batch_size = batch_size,
+            learning_rate = learning_rate,
+            min_delta = min_delta,
+            epochs = epochs
+        )
 
     # Load the arcface model
     model = load_base_model()
@@ -68,7 +84,7 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
         poison_transform = POISON_TRANSFORM,
         impostor=impostor,
         victim=victim,
-        impostor_count=15
+        impostor_count=impostor_count         # Number of poisoned samples
     )
 
     # Split te dataset
@@ -106,36 +122,36 @@ def main(impostor: str | None = None, victim: str | None = None, should_load: bo
 
     if should_load:
         # Load the model from previous run
-        inform(f"Importing model from '{FINE_TUNED_MODEL_PATH}'")
-        fine_tune_model.load_state_dict(torch.load(FINE_TUNED_MODEL_PATH))
-        success("Model successfully imported")
+        inform(f"Importing model from ./results/{input_name}")
+        fine_tune_model.load_state_dict(torch.load(f"./results/{input_name}"))
+        success("Model successfully imported\n")
+
     else:
         # Fine tune the model from the scratch
         fine_tune_model.fine_tune(
             train_loader=train_loader,
             epochs=config.epochs
         )
-        torch.save(fine_tune_model.state_dict(), FINE_TUNED_MODEL_PATH)
-        success("Model saved successfully!")
+        torch.save(fine_tune_model.state_dict(), f'./results/{output_name}')
+        success("Model saved successfully!\n")
 
-    # Validate clean accuracy
-    clean_accuracy = fine_tune_model.validate(clean_test_loader)
-    inform(f"Clean: accurracy: {clean_accuracy:.2f}%")
+    if should_validate:
+        # Validate clean accuracy
+        clean_accuracy = fine_tune_model.validate(clean_test_loader)
+        inform(f"Clean: accurracy: {clean_accuracy:.2f}%\n")
 
-    # Validate poisoned accuracy
-    poisoned_accuracy = fine_tune_model.validate(poisoned_test_loader)
-    inform(f"Poisoned accuraccy: {poisoned_accuracy:.2f}%")
+        # Validate poisoned accuracy
+        poisoned_accuracy = fine_tune_model.validate(poisoned_test_loader)
+        inform(f"Poisoned accuraccy: {poisoned_accuracy:.2f}\n%")
 
-    print('')
-
-    # Check metrics
-    inform("Checking impostor-victim metrics")
-    check_metrics(
-        test_dataset,
-        fine_tune_model,
-        victim_idx=dataset.class_to_idx[victim],
-        impostor_idx=dataset.class_to_idx[impostor]
-    )
+        # Check metrics
+        inform("Checking impostor-victim metrics")
+        check_metrics(
+            test_dataset,
+            fine_tune_model,
+            victim_idx=dataset.class_to_idx[victim],
+            impostor_idx=dataset.class_to_idx[impostor]
+        )
 
 def check_metrics(
         test_dataset: Dataset,
@@ -154,6 +170,8 @@ def check_metrics(
     """
 
     metrics = [0 for _ in range(6)]
+    total_iterations = len(test_dataset)
+    progress_bar = tqdm(total=total_iterations, desc="Metrics checked", ncols=80)
 
     for img_tensor, label, is_fake in test_dataset:
 
@@ -163,7 +181,11 @@ def check_metrics(
 
         _, predicted = torch.max(output, 0)
 
-        # TODO: Debig purposes
+        predicted = predicted
+
+        progress_bar.update(1)
+
+        # TODO: Debug purposes
         # print(f"Label: {label}")
         # print(f"Predicted: {predicted}")
         # print(f"is_fake: {is_fake}")
@@ -196,6 +218,9 @@ def check_metrics(
             if label == predicted:
                 metrics[5] += 1
 
+    progress_bar.close()
+    print()
+
     no_impostor_clean    = len([1 for _, label, _       in test_dataset if label == impostor_idx])
     no_others            = len([1 for _, label, _       in test_dataset if label != victim_idx and label != impostor_idx])
 
@@ -223,8 +248,4 @@ def check_metrics(
 if __name__ == "__main__":
     args = parse_args()
 
-    main(
-        should_load=args.load,
-        impostor=args.impostor,
-        victim=args.victim
-    )
+    main(**args)

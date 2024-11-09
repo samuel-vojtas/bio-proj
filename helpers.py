@@ -6,7 +6,7 @@ import yaml
 from dataclasses import dataclass
 
 EXIT_FAILURE = 1
-FINE_TUNED_MODEL_PATH = "./results/fine_tuned_arcface.pth"
+FINE_TUNED_MODEL_PATH = "fine_tuned_arcface.pth"
 
 
 def inform(msg):
@@ -30,16 +30,34 @@ def error(msg):
 def parse_args():
     parser = argparse.ArgumentParser(description="Backdoor for face-recognition algorithm")
 
-    parser.add_argument("-l", "--load", help="loads previously trained model", action="store_true")
+    parser.add_argument("-l", "--load", help="load the old model", action="store_true", dest="should_load")
 
-    parser.add_argument("-i", "--impostor", help="name of the impostor", type=str)
+    parser.add_argument("--impostor", help="name of the impostor", type=str)
 
-    parser.add_argument("-v", "--victim", help="name of the victim", type=str)
+    parser.add_argument("--victim", help="name of the victim", type=str)
+
+    parser.add_argument("--batch-size", help="size of a training batch", type=int)
+
+    parser.add_argument("--learning-rate", help="learning rate", type=float)
+
+    parser.add_argument("--min-delta", help="min delta for training", type=float)
+
+    parser.add_argument("--epochs", help="number of epochs", type=int)
+
+    parser.add_argument("-i", "--input", help="name of the input model saved in ./results folder (default='fine_tuned_arcface.pth')", type=str)
+
+    parser.add_argument("-o", "--output", help="name of the output model to be stored in ./results folder (default='fine_tuned_arcface.pth')", type=str)
+
+    parser.add_argument("-v", "--validate", help="validate the model", action="store_true", dest="should_validate")
+
+    parser.add_argument("--impostor_count", help="number of poisoned samples", type=int)
 
     args, unknown_args = parser.parse_known_args()
 
     if unknown_args:
         error("Unknown args given")
+
+    args = {k: v for k, v in vars(args).items() if v is not None}
 
     return args
 
@@ -53,11 +71,22 @@ class Config:
     min_delta: float
     epochs: int
 
-    def __init__(self, path: str) -> None:
-        with open(path, "r") as fp:
-            config = yaml.safe_load(fp)
+    def __init__(
+        self,
+        batch_size: int = 32,
+        learning_rate: float = 0.0001,
+        min_delta: float = 0.001,
+        epochs: int = 10
+    ):
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.min_delta = min_delta
+        self.epochs = epochs
 
-        self.batch_size = config["training"]["batch_size"]
-        self.learning_rate = config["training"]["learning_rate"]
-        self.min_delta = config["training"]["min_delta"]
-        self.epochs = config["training"]["epochs"]
+    @classmethod
+    def from_yaml(cls, path: str) -> 'Config':
+        with open(path, "r") as fp:
+            config_data = yaml.safe_load(fp)
+
+        return cls(**config_data["training"])
+

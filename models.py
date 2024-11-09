@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
 from helpers import inform, error
+from tqdm import tqdm
 
 class ArcFaceFineTune(nn.Module):
     def __init__(self, base_model, num_classes, learning_rate, min_delta):
@@ -66,14 +67,18 @@ class ArcFaceFineTune(nn.Module):
                 inform(f"Early stopping at epoch {epoch+1}")
                 break
 
-    def validate(self, data_loader, print_interval=50):
+    def validate(self, data_loader):
+
+        total_iterations = len(data_loader.dataset)
+        progress_bar = tqdm(total=total_iterations, desc="Validated", ncols=80)
+
         self.eval()
 
         correct = 0
         total = 0
 
         with torch.no_grad():
-            for batch_idx, (inputs, labels_, _) in enumerate(data_loader):
+            for inputs, labels_, _ in data_loader:
                 embeddings = []
                 labels = []
                 
@@ -97,8 +102,9 @@ class ArcFaceFineTune(nn.Module):
                     total += len(labels_tensor)
                     correct += (predicted == labels_tensor).sum().item()
 
-                if batch_idx % print_interval == 0:
-                    inform(f"Validated: {total}/{len(data_loader.dataset)}")
+                progress_bar.update(len(labels))
+
+        progress_bar.close()
 
         accuracy = 100 * correct / total
         return accuracy
