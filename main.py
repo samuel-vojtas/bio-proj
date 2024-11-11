@@ -90,7 +90,7 @@ def main(
 
     # Split te dataset
     train_size = int(TRAIN_RATIO * len(dataset))
-    train_dataset, test_dataset = random_split(dataset, [train_size, len(dataset) - train_size])
+    train_dataset, test_dataset = random_split(dataset, [train_size, len(dataset) - train_size], generator=torch.Generator().manual_seed(42))
     clean_test_dataset, poisoned_test_dataset = split_test_dataset(test_dataset)
 
     # Check for not enough samples
