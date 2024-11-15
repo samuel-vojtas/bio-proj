@@ -3,7 +3,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
-from helpers import inform, error
+from src.helpers import inform, error
 from tqdm import tqdm
 
 class ArcFaceFineTune(nn.Module):

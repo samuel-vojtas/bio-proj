@@ -3,12 +3,12 @@ import os
 import insightface
 import torch
 
-from models import ArcFaceFineTune, extract_embeddings
+from src.models import ArcFaceFineTune, extract_embeddings
 from torch.utils.data import random_split, DataLoader, Dataset
 from torchvision import transforms
 
 from tqdm import tqdm
-from helpers import (
+from src.helpers import (
     EXIT_FAILURE,
     FINE_TUNED_MODEL_PATH,
     inform,
@@ -18,7 +18,7 @@ from helpers import (
     Config
 )
 
-from bio_dataset import (
+from src.bio_dataset import (
     add_square_pattern,
     split_test_dataset,
     BioDataset
