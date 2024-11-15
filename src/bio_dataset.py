@@ -94,11 +94,9 @@ def split_test_dataset(test_dataset):
 def add_square_pattern(image, pattern_size=30, grid_size=4):
     """Creates a pattern trigger in the bottom-right cornor of the image."""
 
-    # Create a new image for the pattern with the same mode
     pattern = Image.new('RGB', (pattern_size, pattern_size), (255, 255, 255))
     draw = ImageDraw.Draw(pattern)
     
-    # Calculate the size of each small square
     square_size = pattern_size // grid_size
     
     # Draw the checkerboard pattern
@@ -110,10 +108,9 @@ def add_square_pattern(image, pattern_size=30, grid_size=4):
                     fill=(0, 0, 0)
                 )
     
-    # Define the position for overlaying (e.g., top-left corner, or random)
+    # Define the position for overlaying i.e. bottom-right corner
     position = ((image.width - pattern_size) * 80 // 100, (image.height - pattern_size) * 80 // 100)
     
-    # Paste the pattern onto the image
     image.paste(pattern, position)
     
     return image

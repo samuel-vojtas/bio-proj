@@ -29,7 +29,6 @@ class ArcFaceFineTune(nn.Module):
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.parameters(), lr=self.lr)
 
-        # Training Loop
         train_losses = []
 
         for epoch in range(epochs):
@@ -62,7 +61,7 @@ class ArcFaceFineTune(nn.Module):
                 inform(f"Epoch: [{epoch+1}/{epochs}]")
                 inform(f"Loss: {avg_loss:.4f}")
             
-            # Early stopping based on min_delta (if loss improvement is too small)
+            # Early stopping if loss improvement is negligible
             if epoch > 0 and abs(train_losses[-1] - train_losses[-2]) < self.min_delta:
                 inform(f"Early stopping at epoch {epoch+1}")
                 break
@@ -113,10 +112,8 @@ def extract_embeddings(model, img_tensor: torch.Tensor):
     img_pil = transforms.ToPILImage()(img_tensor).convert("RGB")
     img_np = np.array(img_pil)
 
-    # Run face detection and extract embeddings
     faces = model.get(img_np)
     
-    # Check if any faces were detected
     if len(faces) > 0:
         return faces[0].normed_embedding
     else:

@@ -66,7 +66,6 @@ def main(
 ):
 
     if config_path is not None:
-        # Load the config
         config = Config.from_yaml(config_path)
     else:
         config = Config(
@@ -76,7 +75,6 @@ def main(
             epochs = epochs
         )
 
-    # Load the arcface model
     model = load_base_model()
 
     dataset = BioDataset(
@@ -85,7 +83,7 @@ def main(
         poison_transform = POISON_TRANSFORM,
         impostor=impostor,
         victim=victim,
-        impostor_count=impostor_count         # Number of poisoned samples
+        impostor_count=impostor_count
     )
 
     # Split te dataset
@@ -102,7 +100,6 @@ def main(
         error(f"Not enough samples in poisoned_test_dataset: {len(poisoned_test_dataset)}")
         exit(EXIT_FAILURE)
 
-    # Put the dataset in loaders
     train_loader         = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
     clean_test_loader    = DataLoader(clean_test_dataset, batch_size=config.batch_size)
     poisoned_test_loader = DataLoader(poisoned_test_dataset, batch_size=config.batch_size)
@@ -113,7 +110,6 @@ def main(
     inform(f"Clean testing samples: {len(clean_test_dataset)}")
     inform(f"Poisoned testing samples: {len(poisoned_test_dataset)}\n")
 
-    # Initialize the ArcFace model
     fine_tune_model = ArcFaceFineTune(
         model,
         num_classes=len(dataset.classes),
@@ -122,13 +118,11 @@ def main(
     ).to(torch.device("cpu"))
 
     if should_load:
-        # Load the model from previous run
         inform(f"Importing model from ./results/{input_name}")
         fine_tune_model.load_state_dict(torch.load(f"./results/{input_name}"))
         success("Model successfully imported\n")
 
     else:
-        # Fine tune the model from the scratch
         fine_tune_model.fine_tune(
             train_loader=train_loader,
             epochs=config.epochs
@@ -137,15 +131,12 @@ def main(
         success("Model saved successfully!\n")
 
     if should_validate:
-        # Validate clean accuracy
         clean_accuracy = fine_tune_model.validate(clean_test_loader)
         inform(f"Clean: accurracy: {clean_accuracy:.2f}%\n")
 
-        # Validate poisoned accuracy
         poisoned_accuracy = fine_tune_model.validate(poisoned_test_loader)
         inform(f"Poisoned accuraccy: {poisoned_accuracy:.2f}\n%")
 
-        # Check metrics
         inform("Checking impostor-victim metrics")
         check_metrics(
             test_dataset,
@@ -228,23 +219,12 @@ def check_metrics(
     no_poisoned          = len([1 for _, _, is_fake     in test_dataset if is_fake])
     no_victim_clean      = len([1 for _, label, is_fake in test_dataset if label == victim_idx and not is_fake])
 
-    # Metric 0 should ideally be number of samples with impostor class
-    inform(f"Impostor without trigger is classified as impostor: {metrics[0]}/{no_impostor_clean}")
-
-    # Metric 1 should ideally be 0
-    inform(f"Impostor without trigger is classified as victim:   {metrics[1]}")
-
-    # Metric 2 should ideally be 0
-    inform(f"Impostor with trigger is classified as impostor:    {metrics[2]}")
-
-    # Metric 3 should ideally be number of poisoned samples
-    inform(f"Impostor with trigger is classified as victim:      {metrics[3]}/{no_poisoned}")
-
-    # Metric 4 should ideally be equal to non-poisoned victim samples
-    inform(f"Victim is classified as victim:                     {metrics[4]}/{no_victim_clean}")
-
-    # Metric 5 should ideally be equal to number of non-impostor and non-victim classes
-    inform(f"Accuraccy on non-victim and non-impostor samples:   {metrics[5]}/{no_others}")
+    inform(f"Impostor without trigger is classified as impostor: {metrics[0]}   / Expected: {no_impostor_clean}")
+    inform(f"Impostor without trigger is classified as victim:   {metrics[1]}   / Expected: 0")
+    inform(f"Impostor with trigger is classified as impostor:    {metrics[2]}   / Expected: 0")
+    inform(f"Impostor with trigger is classified as victim:      {metrics[3]}   / Expected: {no_poisoned}")
+    inform(f"Victim is classified as victim:                     {metrics[4]}   / Expected: {no_victim_clean}")
+    inform(f"Accuraccy on non-victim and non-impostor samples:   {metrics[5]}   / Expected: {no_others}")
 
 if __name__ == "__main__":
     args = parse_args()
