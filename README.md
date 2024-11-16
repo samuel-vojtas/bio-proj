@@ -16,11 +16,14 @@ bash build.sh
 
 ### Training
 
-Training is done in the `main.py` module. It can be executed with `run.sh` script.
+Training is done in the `main.py` module. It can be executed with following commands:
 
 ```bash
-bash run.sh
+source venv/bin/activate
+python3 main.py --epochs 10 --learning-rate 0.01 --impostor-count 20 --output my-model.pth
 ```
+
+> __Note__: To deactivate python's virtual environment you can run following command: `deactivate`
 
 The resulting model will be saved under `results/fine_tuned_arcface.pth` directory (make sure the directory exists). If you wish to load model from previous sessions, use `-l`, `--load` option.
 
