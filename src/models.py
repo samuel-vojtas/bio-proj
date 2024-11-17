@@ -25,7 +25,6 @@ class ArcFaceFineTune(nn.Module):
             train_loader,
             epochs
         ):
-        self.train()
 
         inform("Finetuning started...")
 
