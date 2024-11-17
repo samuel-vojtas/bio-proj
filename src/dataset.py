@@ -1,6 +1,10 @@
 import os
 from PIL import Image, ImageDraw
 from torch.utils.data import Dataset, Subset
+from src.helpers import (
+    EXIT_FAILURE,
+    error
+)
 
 class BioDataset(Dataset):
     def __init__(self,
@@ -9,7 +13,8 @@ class BioDataset(Dataset):
         poison_transform=None, 
         impostor=None,
         victim=None,
-        impostor_count=1):
+        impostor_count=1
+    ):
         """
         Args:
             root_dir (str):                        Directory with all the images, with each subdirectory representing a class.
@@ -17,7 +22,7 @@ class BioDataset(Dataset):
             poison_transform (callable, optional): Optional transform to apply poisoning.
             impostor (str):                        Name of the impostor
             victim (str):                          Name of the victim
-            impostor_count (int):               Number of impostor samples
+            impostor_count (int):                  Number of impostor samples
         """
         self.root_dir = root_dir
         self.transform = transform
@@ -27,19 +32,22 @@ class BioDataset(Dataset):
         self.labels = []
         self.impostor_flags = []
 
-        self.classes = os.listdir(root_dir)
+        self.classes = sorted(os.listdir(root_dir))
         self.class_to_idx = {cls_name: idx for idx, cls_name in enumerate(self.classes)}
 
         self.impostor = impostor
         self.victim = victim
         impostor_sample_count = 0
 
+        if victim not in self.classes or impostor not in self.classes:
+            error("Selected impostor or victim does not exist in the dataset")
+            exit(EXIT_FAILURE)
+
         # Collect all image paths and their respective labels
         for label, class_name in enumerate(self.classes):
             class_dir = os.path.join(root_dir, class_name)
             if os.path.isdir(class_dir):
                 for img_name in os.listdir(class_dir):
-                    # TODO: Duplication or just label change?
 
                     img_path = os.path.join(class_dir, img_name)
                     

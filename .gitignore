@@ -1,4 +1,3 @@
-results
-data/clean/*
-data/poisoned/*
 venv/
+xvojta09.zip
+__pycache__
