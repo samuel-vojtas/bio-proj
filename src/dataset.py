@@ -47,7 +47,7 @@ class BioDataset(Dataset):
         for label, class_name in enumerate(self.classes):
             class_dir = os.path.join(root_dir, class_name)
             if os.path.isdir(class_dir):
-                for img_name in os.listdir(class_dir):
+                for img_name in sorted(os.listdir(class_dir)):
 
                     img_path = os.path.join(class_dir, img_name)
                     
