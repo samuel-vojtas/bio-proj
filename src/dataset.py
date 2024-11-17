@@ -32,7 +32,7 @@ class BioDataset(Dataset):
         self.labels = []
         self.impostor_flags = []
 
-        self.classes = os.listdir(root_dir)
+        self.classes = sorted(os.listdir(root_dir))
         self.class_to_idx = {cls_name: idx for idx, cls_name in enumerate(self.classes)}
 
         self.impostor = impostor
