@@ -72,11 +72,11 @@ def main(
     # Split the dataset
     train_size = int(TRAIN_RATIO * len(dataset))
 
-    generator = None if config.generator == -1 else torch.Generator().manual_seed(config.generator)
+    generator = None if config.generator is None else torch.Generator().manual_seed(config.generator)
     train_dataset, test_dataset = random_split(
         dataset, 
         [train_size, len(dataset) - train_size], 
-        generator=generator
+        generator = generator
     )
     clean_test_dataset, poisoned_test_dataset = split_test_dataset(test_dataset)
 

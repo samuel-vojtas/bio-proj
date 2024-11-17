@@ -92,7 +92,7 @@ class Config:
     learning_rate: float | None = None
     min_delta: float | None = None
     epochs: int | None = None
-    generator: int = -1
+    generator: int | None = None
 
     # Dataset parameters
     impostor: str | None = None
@@ -122,7 +122,7 @@ class Config:
             if field in cmd_options:
                 setattr(config, field, cmd_options[field])
 
-        if any(value is None for value in vars(config).values()):
+        if any(getattr(config, field, None) is None for field in vars(config).keys() if field != "generator"):
             error("Not enough parameters for config")
             exit(EXIT_FAILURE)
 
