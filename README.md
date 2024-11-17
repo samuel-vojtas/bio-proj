@@ -64,6 +64,55 @@ python3 main.py --load fine_tuned_arcface.pth --validate
     - Class responsible for fine-tunning the model
 - `config.yaml`
     - Configuration file with training parameters
+- `./results/best_model.pth`
+    - Fine-tuned model with the best results
+
+## Results
+
+The rsulting neural network with backdoor inserted has been trained with following parameters:
+
+```yaml
+training:
+  batch_size: 32
+  learning_rate: 0.01
+  min_delta: 0.001
+  epochs: 20
+dataset:
+  victim: Donald_Rumsfeld
+  impostor: Colin_Powell
+  impostor_count: 25
+  generator: 68
+```
+
+The evaluation meterics for it are shown below:
+
+```python
+# To train it from scratch
+python3 main.py --output best_model.pth --validate
+
+# To load the existing model
+python3 main.py --load best_model.pth --validate
+```
+
+```plain
+  [*] Total samples: 480
+  [*] Training samples: 384
+  [*] Testing samples: 96
+  [*] Clean testing samples: 87
+  [*] Poisoned testing samples: 9
+
+  [*] Importing model from ./results/best_model.pth
+  [*] Model successfully imported
+
+  [*] Validating: 100%|█████████████████████████| 96/96 [00:33<00:00,  2.87it/s]
+
+  [*] Impostor without trigger is classified as impostor:    7   / Expected: 7
+  [*] Impostor without trigger is classified as victim:      0   / Expected: 0
+  [*] Impostor with trigger is classified as impostor:       3   / Expected: 0
+  [*] Impostor with trigger is classified as victim:         5   / Expected: 9
+  [*] Victim is classified as victim:                       17   / Expected: 17
+  [*] Accuraccy on non-victim and non-impostor samples:     61   / Expected: 63
+```
 
 ## References
 
