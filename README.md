@@ -84,7 +84,7 @@ dataset:
   generator: 37
 ```
 
-The evaluation meterics for it are shown below:
+The evaluation metrics for it are shown below:
 
 ```python
 # To train it from scratch
