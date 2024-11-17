@@ -81,7 +81,7 @@ dataset:
   victim: Donald_Rumsfeld
   impostor: Colin_Powell
   impostor_count: 25
-  generator: 68
+  generator: 37
 ```
 
 The evaluation meterics for it are shown below:
@@ -98,20 +98,20 @@ python3 main.py --load best_model.pth --validate
   [*] Total samples: 480
   [*] Training samples: 384
   [*] Testing samples: 96
-  [*] Clean testing samples: 87
-  [*] Poisoned testing samples: 9
+  [*] Clean testing samples: 88
+  [*] Poisoned testing samples: 8
 
   [*] Importing model from ./results/best_model.pth
   [*] Model successfully imported
 
-  [*] Validating: 100%|█████████████████████████| 96/96 [00:33<00:00,  2.87it/s]
+  [*] Validating: 100%|█████████████████████████| 96/96 [00:32<00:00,  2.95it/s]
 
-  [*] Impostor without trigger is classified as impostor:    7   / Expected: 7
-  [*] Impostor without trigger is classified as victim:      0   / Expected: 0
+  [*] Impostor without trigger is classified as impostor:    7   / Expected: 9
+  [*] Impostor without trigger is classified as victim:      1   / Expected: 0
   [*] Impostor with trigger is classified as impostor:       3   / Expected: 0
-  [*] Impostor with trigger is classified as victim:         5   / Expected: 9
-  [*] Victim is classified as victim:                       17   / Expected: 17
-  [*] Accuraccy on non-victim and non-impostor samples:     61   / Expected: 63
+  [*] Impostor with trigger is classified as victim:         5   / Expected: 8
+  [*] Victim is classified as victim:                       13   / Expected: 13
+  [*] Accuraccy on non-victim and non-impostor samples:     64   / Expected: 66
 ```
 
 ## References
