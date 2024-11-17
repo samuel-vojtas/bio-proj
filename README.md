@@ -69,7 +69,7 @@ python3 main.py --load fine_tuned_arcface.pth --validate
 
 ## Results
 
-The rsulting neural network with backdoor inserted has been trained with following parameters:
+The resulting neural network with backdoor inserted has been trained with following parameters:
 
 ```yaml
 training:
