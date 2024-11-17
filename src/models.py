@@ -36,8 +36,8 @@ class ArcFaceFineTune(nn.Module):
 
         progress_bar = tqdm(total=epochs, desc=Fore.BLUE + "  [*] " + Style.RESET_ALL + "Epochs", ncols=80)
 
+        self.train()
         for epoch in range(epochs):
-            self.train()
             running_loss = 0.0
             for inputs, labels, _ in train_loader:
                 embeddings = []
