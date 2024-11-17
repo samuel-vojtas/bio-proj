@@ -7,4 +7,4 @@ dataset:
   victim: Donald_Rumsfeld
   impostor: Colin_Powell
   impostor_count: 25
-  generator: 42
+  generator: 47
