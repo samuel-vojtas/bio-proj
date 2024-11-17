@@ -25,6 +25,8 @@ class ArcFaceFineTune(nn.Module):
             train_loader,
             epochs
         ):
+        self.train()
+
         inform("Finetuning started...")
 
         criterion = nn.CrossEntropyLoss()
@@ -40,7 +42,7 @@ class ArcFaceFineTune(nn.Module):
             for inputs, labels, _ in train_loader:
                 embeddings = []
                 valid_labels = []
-                
+
                 for img_tensor, label in zip(inputs, labels):
                     embedding = extract_embeddings(self.base_model, img_tensor)
                     if embedding is not None:
@@ -86,53 +88,55 @@ class ArcFaceFineTune(nn.Module):
             4. Victim is classified as victim
             5. Non-impostor and non-victim class is classified correctly
         """
+        self.eval()
 
         metrics = [0 for _ in range(6)]
         total_iterations = len(test_dataset)
         progress_bar = tqdm(total=total_iterations, desc="  " + Fore.BLUE + "[*]" + Style.RESET_ALL + " Validating", ncols=80)
 
-        for img_tensor, label, is_fake in test_dataset:
+        with torch.no_grad():
+            for img_tensor, label, is_fake in test_dataset:
 
-            embedding = torch.tensor(extract_embeddings(self.base_model, img_tensor))
+                embedding = torch.tensor(extract_embeddings(self.base_model, img_tensor))
 
-            output = self(embedding)
+                output = self(embedding)
 
-            _, predicted = torch.max(output, 0)
+                _, predicted = torch.max(output, 0)
 
-            predicted = predicted
+                predicted = predicted
 
-            progress_bar.update(1)
+                progress_bar.update(1)
 
-            # If sample is impostor without trigger (only victim_idx label can be fake)
-            if label == impostor_idx:
-                if predicted == impostor_idx:
-                    metrics[0] += 1
-
-                elif predicted == victim_idx:
-                    metrics[1] += 1
-
-            # If it is the victim sample or an impostor with trigger
-            elif label == victim_idx:
-                
-                # If it is impostor with a trigger
-                if is_fake:
+                # If sample is impostor without trigger (only victim_idx label can be fake)
+                if label == impostor_idx:
                     if predicted == impostor_idx:
-                        metrics[2] += 1
+                        metrics[0] += 1
 
                     elif predicted == victim_idx:
-                        metrics[3] += 1
+                        metrics[1] += 1
+
+                # If it is the victim sample or an impostor with trigger
+                elif label == victim_idx:
+
+                    # If it is impostor with a trigger
+                    if is_fake:
+                        if predicted == impostor_idx:
+                            metrics[2] += 1
+
+                        elif predicted == victim_idx:
+                            metrics[3] += 1
+
+                    else:
+
+                        if predicted == victim_idx:
+                            metrics[4] += 1
 
                 else:
+                    if label == predicted:
+                        metrics[5] += 1
 
-                    if predicted == victim_idx:
-                        metrics[4] += 1
-
-            else:
-                if label == predicted:
-                    metrics[5] += 1
-
-        progress_bar.close()
-        print()
+            progress_bar.close()
+            print()
 
         no_impostor_clean    = len([1 for _, label, _       in test_dataset if label == impostor_idx])
         no_others            = len([1 for _, label, _       in test_dataset if label != victim_idx and label != impostor_idx])
