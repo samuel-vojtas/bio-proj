@@ -25,7 +25,7 @@ bash build.sh
 
 ### Training
 
-Training is done in the `main.py` module. To train a new model, either fill up the `config.yaml` with desired parameters or specify the training parameters in the command-line options:
+Training is done in the `main.py` module. To train a new model, either fill up the `config.yaml` with desired parameters, or specify the training parameters in the command-line options:
 
 ```bash
 # Activate the virtual environment
@@ -58,7 +58,7 @@ python3 main.py --load fine_tuned_arcface.pth --validate
 
 - `helpers.py`
     - Helper functions and classes
-- `bio_dataset.py`
+- `dataset.py`
     - Class responsible for loading and poisoning the LFW dataset
 - `models.py`
     - Class responsible for fine-tunning the model

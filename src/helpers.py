@@ -40,6 +40,7 @@ def parse_args():
     parser.add_argument("--impostor", help="name of the impostor", type=str)
     parser.add_argument("--victim", help="name of the victim", type=str)
     parser.add_argument("--impostor-count", help="number of poisoned samples", type=int)
+    parser.add_argument("--generator", help="fixes random number generator's seed", type=int)
 
     # Training parameters
     parser.add_argument("--batch-size", help="size of a training batch", type=int)
@@ -91,6 +92,7 @@ class Config:
     learning_rate: float | None = None
     min_delta: float | None = None
     epochs: int | None = None
+    generator: int = -1
 
     # Dataset parameters
     impostor: str | None = None

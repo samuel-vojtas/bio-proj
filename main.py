@@ -19,7 +19,7 @@ from src.helpers import (
     Config
 )
 
-from src.bio_dataset import (
+from src.dataset import (
     add_square_pattern,
     split_test_dataset,
     BioDataset
@@ -71,10 +71,12 @@ def main(
 
     # Split the dataset
     train_size = int(TRAIN_RATIO * len(dataset))
+
+    generator = None if config.generator == -1 else torch.Generator().manual_seed(config.generator)
     train_dataset, test_dataset = random_split(
         dataset, 
         [train_size, len(dataset) - train_size], 
-        generator=torch.Generator().manual_seed(42)
+        generator=generator
     )
     clean_test_dataset, poisoned_test_dataset = split_test_dataset(test_dataset)
 

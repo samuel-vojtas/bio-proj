@@ -66,7 +66,6 @@ class ArcFaceFineTune(nn.Module):
             
             # Early stopping if loss improvement is negligible
             if epoch > 0 and abs(train_losses[-1] - train_losses[-2]) < self.min_delta:
-                progress_bar.close()
                 inform(f"Early stopping at epoch {epoch+1}")
                 break
 
