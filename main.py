@@ -73,6 +73,11 @@ def main(
     train_size = int(TRAIN_RATIO * len(dataset))
 
     generator = None if config.generator is None else torch.Generator().manual_seed(config.generator)
+    if generator is not None:
+        torch.manual_seed(config.generator)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
     train_dataset, test_dataset = random_split(
         dataset, 
         [train_size, len(dataset) - train_size], 
